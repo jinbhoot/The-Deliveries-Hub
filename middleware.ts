@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/auth";
+import { AUTH_COOKIE_NAME, verifyToken } from "@/lib/jwt";
 
 // Which route prefix belongs to which role
 const PROTECTED_PREFIXES: { prefix: string; role: "client" | "rider" | "admin" }[] = [
