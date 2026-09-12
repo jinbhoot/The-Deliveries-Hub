@@ -14,7 +14,7 @@
     "bcryptjs": "^2.4.3",
     "jose": "^5.9.6",
     "mongoose": "^8.9.5",
-    "next": "15.1.6",
+    "next": "^15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^22.6.1"
@@ -29,7 +29,7 @@
     "@types/react-dom": "^19",
     "dotenv": "^16.4.7",
     "eslint": "^9",
-    "eslint-config-next": "15.1.6",
+    "eslint-config-next": "^15.1.7",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
