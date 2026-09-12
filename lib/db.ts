@@ -10,14 +10,6 @@ try {
   // Ignore DNS config errors in edge environments
 }
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error(
-    "MONGODB_URI is missing. Add it to your .env.local file."
-  );
-}
-
 // Pre-load all Mongoose models so population never fails with MissingSchemaError
 import "@/models/User";
 import "@/models/Rider";
@@ -55,8 +47,15 @@ global._mongooseCache = cached;
 export async function connectDB() {
   if (cached.conn) return cached.conn;
 
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error(
+      "MONGODB_URI environment variable is missing. Set it in your .env.local or Vercel Environment Variables."
+    );
+  }
+
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    cached.promise = mongoose.connect(uri, {
       bufferCommands: false,
     });
   }
