@@ -20,6 +20,7 @@ import "@/models/Order";
 import "@/models/Payment";
 import "@/models/Report";
 import "@/models/Notification";
+import "@/models/PushSubscription";
 
 
 

@@ -18,9 +18,22 @@ export type NotificationItem = {
   };
 };
 
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 function playChimeSound() {
   try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
     const now = ctx.currentTime;
@@ -68,27 +81,27 @@ function timeAgo(dateString: string): string {
 function getNotificationIcon(type: string): string {
   switch (type) {
     case "ORDER_ACCEPTED":
-      return "??";
+      return "🛵";
     case "PAYMENT_REQUESTED":
-      return "??";
+      return "💳";
     case "PAYMENT_RECEIVED":
-      return "??";
+      return "💰";
     case "RIDER_APPROVED":
-      return "??";
+      return "✅";
     case "RIDER_BLOCKED":
-      return "??";
+      return "🚫";
     case "ORDER_PICKED_UP":
-      return "???";
+      return "📦";
     case "ORDER_ON_THE_WAY":
-      return "??";
+      return "🚚";
     case "ORDER_DELIVERED":
-      return "??";
+      return "🎉";
     case "ORDER_CANCELLED":
-      return "?";
+      return "❌";
     case "NEW_ORDER":
-      return "??";
+      return "🛍️";
     default:
-      return "??";
+      return "🔔";
   }
 }
 
@@ -105,6 +118,7 @@ export default function NotificationBell({
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [activeToast, setActiveToast] = useState<NotificationItem | null>(null);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>("default");
 
   const prevIdsRef = useRef<Set<string>>(new Set());
   const isFirstLoadRef = useRef(true);
@@ -121,7 +135,78 @@ export default function NotificationBell({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch notifications
+  // Sync Push Subscription with Server
+  async function syncPushSubscription() {
+    if (
+      typeof window === "undefined" ||
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window)
+    ) {
+      return;
+    }
+
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidPublicKey) return;
+
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub && Notification.permission === "granted") {
+        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey,
+        });
+      }
+
+      if (sub) {
+        const subJson = sub.toJSON();
+        if (subJson.endpoint && subJson.keys?.p256dh && subJson.keys?.auth) {
+          await fetch("/api/notifications/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              endpoint: subJson.endpoint,
+              keys: {
+                p256dh: subJson.keys.p256dh,
+                auth: subJson.keys.auth,
+              },
+            }),
+          });
+        }
+      }
+    } catch (err) {
+      console.debug("Service worker registration or push sync note:", err);
+    }
+  }
+
+  // Check initial permission state and register SW
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPushPermission(Notification.permission);
+      if (Notification.permission === "granted") {
+        syncPushSubscription();
+      }
+    }
+  }, []);
+
+  // Request browser notification permission explicitly
+  async function enablePushNotifications() {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    try {
+      const permission = await Notification.requestPermission();
+      setPushPermission(permission);
+      if (permission === "granted") {
+        await syncPushSubscription();
+      }
+    } catch (err) {
+      console.error("Permission request error:", err);
+    }
+  }
+
+  // Fetch in-app notifications
   async function fetchNotifications() {
     try {
       const res = await fetch("/api/notifications");
@@ -132,50 +217,32 @@ export default function NotificationBell({
         setNotifications(fetched);
         setUnreadCount(json.unreadCount || 0);
 
-        // Check for brand new incoming notifications to trigger live toast
+        // Trigger in-app toast & chime sound for newly received items
         if (!isFirstLoadRef.current) {
-          const newItems = fetched.filter((item) => !prevIdsRef.current.has(item._id) && !item.read);
+          const newItems = fetched.filter(
+            (item) => !prevIdsRef.current.has(item._id) && !item.read
+          );
           if (newItems.length > 0) {
             const latest = newItems[0];
             setActiveToast(latest);
             playChimeSound();
-
-            // Native browser push notification if permitted
-            if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-              try {
-                new Notification(latest.title, {
-                  body: latest.message,
-                  icon: "/favicon.ico",
-                });
-              } catch {
-                // Ignore browser notification error
-              }
-            }
           }
         }
 
-        // Update tracking set
         prevIdsRef.current = new Set(fetched.map((n) => n._id));
         isFirstLoadRef.current = false;
       }
     } catch {
-      // Silently ignore polling network errors
+      // Silently ignore network poll errors
     }
   }
 
-  // Polling interval
+  // Polling interval for in-app updates
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 7000);
     return () => clearInterval(interval);
   }, []);
-
-  // Request browser notification permission
-  function requestPushPermission() {
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
-  }
 
   async function handleMarkAllAsRead() {
     setLoading(true);
@@ -220,7 +287,9 @@ export default function NotificationBell({
         type="button"
         onClick={() => {
           setIsOpen(!isOpen);
-          requestPushPermission();
+          if (pushPermission === "default") {
+            enablePushNotifications();
+          }
         }}
         className={`relative p-2 rounded-xl transition cursor-pointer flex items-center justify-center ${
           theme === "orange"
@@ -232,7 +301,7 @@ export default function NotificationBell({
         aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ""}`}
         title="Notifications"
       >
-        <span className="text-lg leading-none select-none">??</span>
+        <span className="text-xl leading-none select-none">🔔</span>
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-black text-white shadow-sm animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -264,7 +333,7 @@ export default function NotificationBell({
                     }}
                     className="bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold px-3 py-1 rounded-lg transition"
                   >
-                    View Details ?
+                    View Details →
                   </button>
                 )}
                 <button
@@ -281,7 +350,7 @@ export default function NotificationBell({
               onClick={() => setActiveToast(null)}
               className="text-gray-400 hover:text-gray-600 text-sm font-bold"
             >
-              ?
+              ✕
             </button>
           </div>
         </div>
@@ -312,11 +381,30 @@ export default function NotificationBell({
             )}
           </div>
 
+          {/* Enable Mobile/Desktop Background Push Banner (if permission not granted yet) */}
+          {pushPermission === "default" && (
+            <div className="bg-orange-50 p-3 border-b border-orange-100 flex items-center justify-between gap-2">
+              <div className="text-[11px] text-orange-900 leading-tight">
+                <p className="font-bold">📱 Get Mobile & Background Alerts</p>
+                <p className="text-orange-700 text-[10px] mt-0.5">
+                  Receive updates even when website is closed.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={enablePushNotifications}
+                className="bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shrink-0 shadow-sm transition"
+              >
+                Allow
+              </button>
+            </div>
+          )}
+
           {/* List */}
           <div className="max-h-[360px] overflow-y-auto divide-y divide-gray-100">
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-400 text-xs">
-                <span className="text-3xl block mb-2">??</span>
+                <span className="text-3xl block mb-2">📭</span>
                 No notifications yet.
               </div>
             ) : (
@@ -333,7 +421,11 @@ export default function NotificationBell({
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <p className={`text-xs font-bold truncate ${!notif.read ? "text-gray-900" : "text-gray-700"}`}>
+                      <p
+                        className={`text-xs font-bold truncate ${
+                          !notif.read ? "text-gray-900" : "text-gray-700"
+                        }`}
+                      >
                         {notif.title}
                       </p>
                       <span className="text-[10px] text-gray-400 shrink-0">
@@ -356,7 +448,7 @@ export default function NotificationBell({
           {notifications.length > 0 && (
             <div className="p-2 bg-gray-50 border-t border-gray-100 text-center">
               <span className="text-[10px] text-gray-400">
-                Real-time updates enabled
+                Real-time & Background Push enabled
               </span>
             </div>
           )}
@@ -365,4 +457,3 @@ export default function NotificationBell({
     </div>
   );
 }
-

@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db";
 import Notification, { NotificationType } from "@/models/Notification";
+import { sendWebPushNotification } from "@/lib/webPush";
 import mongoose from "mongoose";
 
 export interface CreateNotificationParams {
@@ -34,6 +35,16 @@ export async function createNotification({
       link,
       order: orderId ? (typeof orderId === "string" ? new mongoose.Types.ObjectId(orderId) : orderId) : null,
       read: false,
+    });
+
+    // Asynchronously trigger Web Push to user devices without blocking response
+    sendWebPushNotification(recipient, {
+      title,
+      message,
+      link,
+      type,
+    }).catch((err) => {
+      console.error("Background Web Push trigger failed:", err);
     });
 
     return notif;
