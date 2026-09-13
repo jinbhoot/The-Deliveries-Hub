@@ -165,6 +165,36 @@ function PaymentContent() {
     }
   }, [redirectStatus, orderIdParam, paymentIntentParam]);
 
+  // Hide Stripe Developer Assistant floating badge from DOM
+  useEffect(() => {
+    function purgeStripeBadge() {
+      const badges = document.querySelectorAll(
+        'iframe[src*="developer"], iframe[name*="developer"], iframe[src*="assistant"], div[class*="StripeDeveloperAssistant"], [data-stripe-assistant], #__privateStripeAssistant'
+      );
+      badges.forEach((node) => {
+        const parent = node.parentElement;
+        if (parent && parent !== document.body && parent.children.length === 1) {
+          (parent as HTMLElement).style.setProperty("display", "none", "important");
+        }
+        (node as HTMLElement).style.setProperty("display", "none", "important");
+      });
+
+      // Target fixed bottom right elements containing stripe developer badge
+      const allFixed = document.querySelectorAll('div[style*="fixed"]');
+      allFixed.forEach((el) => {
+        const txt = el.textContent?.trim().toLowerCase() || "";
+        if (txt === "stripe >" || txt === "stripe" || txt.includes("stripe >")) {
+          (el as HTMLElement).style.setProperty("display", "none", "important");
+        }
+      });
+    }
+
+    purgeStripeBadge();
+    const obs = new MutationObserver(purgeStripeBadge);
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
+
   // Load Order details
   useEffect(() => {
     async function loadOrder() {
@@ -498,6 +528,18 @@ function PaymentContent() {
           .checkout-card {
             padding: 20px 16px;
           }
+        }
+        /* Completely hide Stripe developer floating badge */
+        iframe[src*="developer"],
+        iframe[name*="developer"],
+        iframe[src*="assistant"],
+        div[class*="StripeDeveloperAssistant"],
+        [data-stripe-assistant],
+        #__privateStripeAssistant {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
         }
       `}</style>
     </div>
