@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import LogoutButton from "@/components/LogoutButton";
+import NotificationBell from "@/components/NotificationBell";
 
 type DashboardHeaderProps = {
   cartCount: number;
@@ -20,6 +21,7 @@ export function DashboardHeader({ cartCount, onOpenCart, onOpenOrders }: Dashboa
         <Link className="top-link" href="/">Home</Link>
         <button className="top-link" type="button" onClick={onOpenOrders}>My Orders</button>
         <Link className="top-link" href="/ClientDashboard/Report">Report</Link>
+        <NotificationBell theme="orange" className="top-link" />
         <LogoutButton className="logout-link" />
       </nav>
       <button className="cart-toggle" type="button" onClick={onOpenCart}>

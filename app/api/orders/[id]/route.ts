@@ -4,6 +4,7 @@ import Order, { ORDER_STATUS_FLOW, type OrderStatus } from "@/models/Order";
 import Payment from "@/models/Payment";
 import { requireAuth } from "@/lib/apiAuth";
 import { calculateRevenueSplit } from "@/lib/revenue";
+import { createNotification } from "@/lib/notifications";
 
 // GET /api/orders/:id -> owner (client), assigned rider, or admin
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -66,8 +67,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       );
     }
 
+    const shortCode = String(order._id).slice(-6).toUpperCase();
+
     if (billStatus) {
       order.billStatus = billStatus;
+      if (billStatus === "Requested") {
+        await createNotification({
+          recipient: order.customer,
+          sender: session.id,
+          type: "PAYMENT_REQUESTED",
+          title: "💳 Payment Requested",
+          message: `Rider has requested bill payment of PKR ${order.totalAmount} for order #${shortCode}. Please complete payment online or via COD.`,
+          link: `/ClientDashboard/payment?orderId=${id}`,
+          orderId: id,
+        });
+      }
     }
 
     if (status) {
@@ -97,6 +111,48 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       order.status = status;
 
+      // Send status update notifications to customer
+      if (status === "Picked Up") {
+        await createNotification({
+          recipient: order.customer,
+          sender: session.id,
+          type: "ORDER_PICKED_UP",
+          title: "🛍️ Order Picked Up!",
+          message: `Rider has picked up your items for order #${shortCode} from the store.`,
+          link: `/ClientDashboard/myorders?id=${id}`,
+          orderId: id,
+        });
+      } else if (status === "On the way") {
+        await createNotification({
+          recipient: order.customer,
+          sender: session.id,
+          type: "ORDER_ON_THE_WAY",
+          title: "🚚 Order is On The Way!",
+          message: `Rider is on the way with your order #${shortCode}. Please be available at the delivery location.`,
+          link: `/ClientDashboard/myorders?id=${id}`,
+          orderId: id,
+        });
+      } else if (status === "Delivered") {
+        await createNotification({
+          recipient: order.customer,
+          sender: session.id,
+          type: "ORDER_DELIVERED",
+          title: "🎉 Order Delivered!",
+          message: `Your order #${shortCode} has been successfully delivered. Thank you for using Deliveries Hub!`,
+          link: `/ClientDashboard/myorders?id=${id}`,
+          orderId: id,
+        });
+      } else if (status === "Cancelled") {
+        await createNotification({
+          recipient: order.customer,
+          sender: session.id,
+          type: "ORDER_CANCELLED",
+          title: "❌ Order Cancelled",
+          message: `Order #${shortCode} has been cancelled.`,
+          link: `/ClientDashboard/myorders?id=${id}`,
+          orderId: id,
+        });
+      }
 
       // Cash-on-delivery orders are marked paid automatically on delivery.
       if (status === "Delivered" && order.paymentMethod === "COD" && !order.isPaid) {
@@ -126,6 +182,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           },
           { upsert: true, new: true }
         );
+
+        // Notify Rider about COD collection
+        if (order.rider) {
+          await createNotification({
+            recipient: order.rider,
+            type: "PAYMENT_RECEIVED",
+            title: "💰 COD Payment Collected",
+            message: `COD Payment of PKR ${order.totalAmount} recorded for order #${shortCode}. Your earnings: PKR ${split.riderEarnings}.`,
+            link: `/RiderDashboard/myorders`,
+            orderId: id,
+          });
+        }
       }
     }
 

@@ -4,6 +4,7 @@ import Payment from "@/models/Payment";
 import Order from "@/models/Order";
 import { requireAuth } from "@/lib/apiAuth";
 import { calculateRevenueSplit } from "@/lib/revenue";
+import { createNotification } from "@/lib/notifications";
 
 // GET /api/payments -> client sees their own, admin sees all
 export async function GET(request: NextRequest) {
@@ -86,6 +87,31 @@ export async function POST(request: NextRequest) {
         riderEarnings: split.riderEarnings,
         adminCommission: split.adminCommission,
       },
+    });
+
+    const shortCode = orderId.slice(-6).toUpperCase();
+
+    // 1. Notify Rider if order has an assigned rider
+    if (existingOrder?.rider) {
+      await createNotification({
+        recipient: existingOrder.rider,
+        sender: session.id,
+        type: "PAYMENT_RECEIVED",
+        title: "💰 Payment Received!",
+        message: `Online payment of PKR ${amount} confirmed for order #${shortCode}. Your earnings: PKR ${split.riderEarnings}. You can now proceed to pick up and deliver.`,
+        link: `/RiderDashboard/myorders`,
+        orderId,
+      });
+    }
+
+    // 2. Notify Client
+    await createNotification({
+      recipient: session.id,
+      type: "PAYMENT_RECEIVED",
+      title: "✅ Payment Confirmed",
+      message: `Your payment of PKR ${amount} for order #${shortCode} has been confirmed. Rider will deliver your order soon.`,
+      link: `/ClientDashboard/myorders?id=${orderId}`,
+      orderId,
     });
 
     return NextResponse.json(

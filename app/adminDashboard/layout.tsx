@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import LogoutButton from "@/components/LogoutButton";
+import NotificationBell from "@/components/NotificationBell";
 
 const navItems = [
   { href: "/adminDashboard", label: "Dashboard" },
@@ -33,18 +34,21 @@ export default function DashboardLayout({
           <span className="font-extrabold text-orange-600 text-lg">Deliveries Hub</span>
           <span className="rounded-md bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-orange-700">Admin</span>
         </div>
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="rounded-xl p-2 text-slate-700 hover:bg-slate-100 transition"
-          aria-label="Toggle navigation menu"
-        >
-          {mobileMenuOpen ? (
-            <span className="text-xl font-bold">✕</span>
-          ) : (
-            <span className="text-xl font-bold">☰</span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell theme="light" />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-xl p-2 text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? (
+              <span className="text-xl font-bold">✕</span>
+            ) : (
+              <span className="text-xl font-bold">☰</span>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer Backdrop */}
@@ -102,14 +106,17 @@ export default function DashboardLayout({
 
       {/* Desktop / Tablet Sidebar */}
       <aside className="w-64 shrink-0 bg-white shadow-lg hidden md:flex md:flex-col sticky top-0 h-screen">
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <span className="size-3 rounded-full bg-orange-500 shadow-[0_0_0_3px_rgba(249,115,22,0.2)]" />
-            <span className="text-xl font-black text-orange-600">Deliveries Hub</span>
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="size-3 rounded-full bg-orange-500 shadow-[0_0_0_3px_rgba(249,115,22,0.2)]" />
+              <span className="text-xl font-black text-orange-600">Deliveries Hub</span>
+            </div>
+            <p className="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Admin Console
+            </p>
           </div>
-          <p className="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Admin Console
-          </p>
+          <NotificationBell theme="light" />
         </div>
 
         <nav className="flex-1 space-y-1 px-4 py-6 overflow-y-auto">

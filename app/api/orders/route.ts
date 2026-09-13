@@ -4,6 +4,7 @@ import Order from "@/models/Order";
 import { requireAuth } from "@/lib/apiAuth";
 import { calculateDeliveryCharges } from "@/lib/deliveryCharges";
 import { calculateRevenueSplit } from "@/lib/revenue";
+import { createNotification } from "@/lib/notifications";
 
 // GET /api/orders -> role-scoped list
 //   client -> only their own orders
@@ -85,6 +86,16 @@ export async function POST(request: NextRequest) {
       paymentMethod: paymentMethod === "COD" ? "COD" : "Card",
       status: "Placed",
       billStatus: "Pending",
+    });
+
+    const shortCode = order._id.toString().slice(-6).toUpperCase();
+    await createNotification({
+      recipient: session.id,
+      type: "NEW_ORDER",
+      title: "📦 Order Placed Successfully!",
+      message: `Your order #${shortCode} for PKR ${calc.finalBill} was placed. Waiting for a nearby rider to accept.`,
+      link: `/ClientDashboard/myorders?id=${order._id}`,
+      orderId: order._id,
     });
 
     return NextResponse.json(
