@@ -184,10 +184,15 @@ export default function NotificationBell({
 
   // Check initial permission state and register SW
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setPushPermission(Notification.permission);
-      if (Notification.permission === "granted") {
-        syncPushSubscription();
+    if (typeof window !== "undefined") {
+      if ("Notification" in window) {
+        setPushPermission(Notification.permission);
+        if (Notification.permission === "granted") {
+          syncPushSubscription();
+        }
+      }
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
       }
     }
   }, []);
@@ -237,10 +242,10 @@ export default function NotificationBell({
     }
   }
 
-  // Polling interval for in-app updates
+  // Polling interval for in-app updates (every 5 seconds)
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 7000);
+    const interval = setInterval(fetchNotifications, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -293,7 +298,7 @@ export default function NotificationBell({
         }}
         className={`relative p-2 rounded-xl transition cursor-pointer flex items-center justify-center ${
           theme === "orange"
-            ? "bg-orange-600/20 text-orange-100 hover:bg-orange-600/40 hover:text-white"
+            ? "bg-white/15 text-white hover:bg-white/25 border border-white/30"
             : theme === "dark"
             ? "bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white"
             : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-200"
@@ -309,11 +314,11 @@ export default function NotificationBell({
         )}
       </button>
 
-      {/* In-App Floating Toast Alert */}
+      {/* In-App Floating Toast Alert (Mobile-Safe) */}
       {activeToast && (
-        <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white rounded-2xl shadow-2xl border-2 border-orange-500 p-4 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-4 sm:bottom-5 left-3 sm:left-auto right-3 sm:right-5 z-50 w-auto max-w-[calc(100vw-24px)] sm:max-w-sm bg-white rounded-2xl shadow-2xl border-2 border-orange-500 p-3.5 sm:p-4 animate-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-start gap-3">
-            <span className="text-2xl p-2 bg-orange-100 rounded-xl">
+            <span className="text-2xl p-2 bg-orange-100 rounded-xl shrink-0">
               {getNotificationIcon(activeToast.type)}
             </span>
             <div className="flex-1 min-w-0">
@@ -348,7 +353,7 @@ export default function NotificationBell({
             <button
               type="button"
               onClick={() => setActiveToast(null)}
-              className="text-gray-400 hover:text-gray-600 text-sm font-bold"
+              className="text-gray-400 hover:text-gray-600 text-sm font-bold shrink-0 p-1"
             >
               ✕
             </button>
@@ -356,9 +361,9 @@ export default function NotificationBell({
         </div>
       )}
 
-      {/* Notifications Dropdown Panel */}
+      {/* Notifications Dropdown Panel (Mobile Responsive) */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 text-left">
+        <div className="fixed sm:absolute top-16 sm:top-full left-3 sm:left-auto right-3 sm:right-0 mt-2 w-auto sm:w-96 max-w-[calc(100vw-24px)] rounded-2xl bg-white shadow-2xl border border-gray-200 z-50 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 text-left">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center gap-2">

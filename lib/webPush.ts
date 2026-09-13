@@ -37,14 +37,20 @@ export interface PushNotificationPayload {
 }
 
 export async function sendWebPushNotification(
-  userId: string | mongoose.Types.ObjectId,
+  userId: string | mongoose.Types.ObjectId | Record<string, unknown>,
   payload: PushNotificationPayload
 ) {
   try {
     if (!configureWebPush()) return;
 
     await connectDB();
-    const userObjectId = typeof userId === "string" ? new mongoose.Types.ObjectId(userId) : userId;
+    const rawId =
+      typeof userId === "object" && userId !== null && "_id" in userId
+        ? (userId as { _id: mongoose.Types.ObjectId | string })._id
+        : userId;
+
+    const userObjectId =
+      typeof rawId === "string" ? new mongoose.Types.ObjectId(rawId) : rawId;
 
     const subscriptions = await PushSubscription.find({ user: userObjectId });
     if (!subscriptions || subscriptions.length === 0) {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, useMemo } from "react";
+import NotificationBell from "@/components/NotificationBell";
 
 type OrderItem = {
   item?: string;
@@ -159,32 +160,40 @@ function MyOrdersContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 font-sans">
       {/* Top Navigation Header */}
-      <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-orange-600/30 bg-orange-500 px-4 py-3 sm:px-6 sm:py-4 text-white shadow-md md:px-8">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/ClientDashboard"
-            className="flex items-center gap-1.5 rounded-xl bg-orange-600/60 px-2.5 py-1.5 text-xs font-bold transition hover:bg-orange-700 shrink-0"
-          >
-            ← <span className="hidden sm:inline">Back to</span> Dashboard
-          </Link>
-          <span className="hidden sm:inline text-white/50">|</span>
-          <h1 className="text-base sm:text-lg font-extrabold tracking-tight truncate">📦 My Orders & Live Tracking</h1>
-        </div>
+      <header className="sticky top-0 z-40 border-b border-orange-600/30 bg-orange-500 px-3.5 sm:px-6 py-2.5 sm:py-3.5 text-white shadow-md md:px-8">
+        <div className="mx-auto max-w-7xl flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link
+              href="/ClientDashboard"
+              className="flex items-center gap-1.5 rounded-xl bg-orange-600/60 px-2.5 py-1.5 text-xs font-bold transition hover:bg-orange-700 shrink-0"
+            >
+              ← <span className="hidden sm:inline">Back to</span> Dashboard
+            </Link>
+            <span className="hidden sm:inline text-white/50">|</span>
+            <h1 className="text-sm sm:text-base md:text-lg font-extrabold tracking-tight truncate">
+              📦 My Orders
+            </h1>
+          </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => loadOrders(false)}
-            className="rounded-xl border border-white/30 bg-white/10 px-2.5 py-1.5 text-xs font-semibold hover:bg-white/20 transition flex items-center gap-1.5"
-            title="Refresh Orders"
-          >
-            <span className="animate-spin text-xs">↻</span> Live
-          </button>
-          <Link
-            href="/ClientDashboard"
-            className="rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-orange-600 hover:bg-orange-50 shadow-sm transition"
-          >
-            + New Order
-          </Link>
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Real-time Push Notification Bell */}
+            <NotificationBell theme="orange" />
+
+            <button
+              onClick={() => loadOrders(false)}
+              className="rounded-xl border border-white/30 bg-white/10 px-2 sm:px-2.5 py-1.5 text-xs font-semibold hover:bg-white/20 transition flex items-center gap-1"
+              title="Refresh Orders"
+            >
+              <span className="animate-spin text-xs">↻</span>
+              <span className="hidden sm:inline">Live</span>
+            </button>
+            <Link
+              href="/ClientDashboard"
+              className="rounded-xl bg-white px-2.5 sm:px-3 py-1.5 text-xs font-bold text-orange-600 hover:bg-orange-50 shadow-sm transition"
+            >
+              + <span className="hidden sm:inline">New</span> Order
+            </Link>
+          </div>
         </div>
       </header>
 

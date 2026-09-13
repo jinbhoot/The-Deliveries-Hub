@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import NotificationBell from "@/components/NotificationBell";
 
 type OrderOption = {
   _id: string;
@@ -78,13 +79,16 @@ export default function ReportPage() {
 
   return (
     <div className="report-page">
-      <header>
+      <header className="flex items-center justify-between">
         <div className="brand">
           Delivery Hub<small>Client Report</small>
         </div>
-        <Link className="back" href="/ClientDashboard">
-          Back to Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <NotificationBell theme="light" />
+          <Link className="back" href="/ClientDashboard">
+            Back to Dashboard
+          </Link>
+        </div>
       </header>
 
       <main>

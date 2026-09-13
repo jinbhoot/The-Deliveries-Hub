@@ -26,9 +26,19 @@ export async function createNotification({
     if (!recipient) return null;
     await connectDB();
 
+    const recipientId =
+      typeof recipient === "object" && recipient !== null && "_id" in recipient
+        ? (recipient as { _id: mongoose.Types.ObjectId | string })._id
+        : recipient;
+
+    const senderId =
+      typeof sender === "object" && sender !== null && "_id" in sender
+        ? (sender as { _id: mongoose.Types.ObjectId | string })._id
+        : sender;
+
     const notif = await Notification.create({
-      recipient: typeof recipient === "string" ? new mongoose.Types.ObjectId(recipient) : recipient,
-      sender: sender ? (typeof sender === "string" ? new mongoose.Types.ObjectId(sender) : sender) : null,
+      recipient: typeof recipientId === "string" ? new mongoose.Types.ObjectId(recipientId) : recipientId,
+      sender: senderId ? (typeof senderId === "string" ? new mongoose.Types.ObjectId(senderId) : senderId) : null,
       type,
       title,
       message,
@@ -38,7 +48,7 @@ export async function createNotification({
     });
 
     // Asynchronously trigger Web Push to user devices without blocking response
-    sendWebPushNotification(recipient, {
+    sendWebPushNotification(recipientId, {
       title,
       message,
       link,

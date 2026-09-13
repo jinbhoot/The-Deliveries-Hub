@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import NotificationBell from "@/components/NotificationBell";
 
 
 type SubcategoryRecord = {
@@ -719,35 +720,95 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-white/20 bg-orange-500 px-4 py-3 sm:px-6 sm:py-4 text-white shadow-sm md:px-8">
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-white shadow-[0_0_0_4px_rgba(255,255,255,0.2)]" />
-          <div>
-            <p className="text-lg sm:text-xl font-extrabold leading-tight">Delivery Hub</p>
-            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-orange-100">
-              Client Dashboard
-            </p>
+      {/* Responsive Top Header */}
+      <header className="sticky top-0 z-40 border-b border-white/20 bg-orange-500 text-white shadow-sm">
+        <div className="mx-auto max-w-[1400px] flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 gap-2">
+          {/* Brand */}
+          <Link href="/ClientDashboard" className="flex items-center gap-2 shrink-0">
+            <span className="size-2.5 sm:size-3 rounded-full bg-white shadow-[0_0_0_3px_rgba(255,255,255,0.25)]" />
+            <div>
+              <p className="text-base sm:text-lg font-black leading-tight">Deliveries Hub</p>
+              <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-orange-100">
+                Client Dashboard
+              </p>
+            </div>
+          </Link>
+
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-2 text-xs font-bold" aria-label="Desktop client navigation">
+            <Link
+              href="/"
+              className="rounded-full border border-white/40 px-3.5 py-1.5 hover:bg-white/15 transition"
+            >
+              Home
+            </Link>
+            <button
+              onClick={openMyOrders}
+              className="rounded-full border border-white/40 px-3.5 py-1.5 hover:bg-white/15 transition cursor-pointer"
+            >
+              My Orders
+            </button>
+            <Link
+              href="/ClientDashboard/Report"
+              className="rounded-full border border-white/40 px-3.5 py-1.5 hover:bg-white/15 transition"
+            >
+              Report
+            </Link>
+          </nav>
+
+          {/* Right Action Icons (Bell, Ticket, Logout) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Real-time Push Notification Bell */}
+            <NotificationBell theme="orange" />
+
+            {/* Cart Ticket Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsCartOpen(true)}
+              className="relative rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 px-2.5 sm:px-3 py-1.5 text-xs font-black transition flex items-center gap-1 cursor-pointer"
+              title="View Cart Ticket"
+            >
+              <span>🧾</span>
+              <span className="hidden sm:inline">Ticket</span>
+              {cart.length > 0 && (
+                <span className="flex size-4 items-center justify-center rounded-full bg-white text-[10px] font-black text-orange-600">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+
+            {/* Logout Button */}
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-xl bg-white px-2.5 sm:px-3 py-1.5 text-xs font-bold text-orange-600 hover:bg-orange-50 shadow-xs transition cursor-pointer"
+            >
+              Logout
+            </button>
           </div>
         </div>
 
-        <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-bold">
-          <Link href="/" className="rounded-full border border-white/40 px-3 py-1.5 sm:px-4 sm:py-2 hover:bg-white/15 transition">
+        {/* Mobile Horizontal Sub-Navigation Bar */}
+        <div className="flex md:hidden items-center justify-around border-t border-white/15 bg-orange-600/30 px-2 py-1.5 text-xs font-bold">
+          <Link
+            href="/"
+            className="px-2.5 py-1 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition"
+          >
             Home
           </Link>
           <button
             onClick={openMyOrders}
-            className="rounded-full border border-white/40 px-3 py-1.5 sm:px-4 sm:py-2 hover:bg-white/15 transition"
+            className="px-2.5 py-1 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition cursor-pointer"
           >
             My Orders
           </button>
-          <Link href="/ClientDashboard/Report" className="rounded-full border border-white/40 px-3 py-1.5 sm:px-4 sm:py-2 hover:bg-white/15 transition">
+          <Link
+            href="/ClientDashboard/Report"
+            className="px-2.5 py-1 rounded-lg text-white/90 hover:text-white hover:bg-white/10 transition"
+          >
             Report
           </Link>
-          <button type="button" onClick={logout} className="rounded-full bg-white px-3 py-1.5 sm:px-4 sm:py-2 text-orange-600 hover:bg-orange-50 shadow-xs transition">
-            Logout
-          </button>
-        </nav>
+        </div>
       </header>
 
       {/* Active Rider Bill Payment Request Alert Banner */}
