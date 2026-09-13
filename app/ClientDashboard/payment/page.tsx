@@ -10,7 +10,6 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { CheckoutHeader } from "../components/CheckoutHeader";
 
 // Initialize Stripe client outside of render
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
@@ -231,7 +230,6 @@ function PaymentContent() {
 
   return (
     <div className="checkout-page">
-      <CheckoutHeader eyebrow="Secure checkout" />
       <main className="checkout-main">
         <section className="checkout-card" aria-live="polite">
           {paid ? (
