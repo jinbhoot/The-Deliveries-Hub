@@ -71,10 +71,19 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Register error:", error);
+    const errObj = error as { code?: number; message?: string };
+    if (errObj?.code === 11000) {
+      return NextResponse.json(
+        { success: false, message: "An account with this email already exists." },
+        { status: 409 }
+      );
+    }
+    const message =
+      error instanceof Error ? error.message : "Something went wrong. Please try again.";
     return NextResponse.json(
-      { success: false, message: "Something went wrong. Please try again." },
+      { success: false, message },
       { status: 500 }
     );
   }

@@ -81,10 +81,12 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
+    const message =
+      error instanceof Error ? error.message : "Something went wrong. Please try again.";
     return NextResponse.json(
-      { success: false, message: "Something went wrong. Please try again." },
+      { success: false, message },
       { status: 500 }
     );
   }
