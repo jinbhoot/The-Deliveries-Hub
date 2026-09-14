@@ -49,10 +49,23 @@ global._mongooseCache = cached;
 export async function connectDB() {
   if (cached.conn) return cached.conn;
 
-  const uri = process.env.MONGODB_URI;
+  let uri = (process.env.MONGODB_URI || "").trim();
+  // Strip accidental surrounding quotes (e.g., "mongodb://..." or 'mongodb://...')
+  uri = uri.replace(/^["']+|["']+$/g, "").trim();
+  // Strip accidental "MONGODB_URI=" prefix if pasted into Vercel value field
+  if (uri.startsWith("MONGODB_URI=")) {
+    uri = uri.substring("MONGODB_URI=".length).trim().replace(/^["']+|["']+$/g, "").trim();
+  }
+
   if (!uri) {
     throw new Error(
       "MONGODB_URI environment variable is missing. Set it in your .env.local or Vercel Environment Variables."
+    );
+  }
+
+  if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
+    throw new Error(
+      `Invalid MONGODB_URI format. It must start with "mongodb://" or "mongodb+srv://". Currently starts with "${uri.slice(0, 15)}...". Please check Vercel Environment Variables.`
     );
   }
 
