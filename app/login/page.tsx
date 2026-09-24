@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -114,12 +115,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 max-w-sm w-full mx-auto relative overflow-hidden">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <div className="bg-orange-500 text-white p-2 rounded-md">
-              🔒
-            </div>
-            <span className="font-bold text-gray-900">Deliveries Hub</span>
-          </div>
+          <Logo href="/" size="xs" showText={true} />
 
           <div className="text-xs sm:text-sm text-gray-500 space-x-2 sm:space-x-3">
             <Link href="/" className="hover:text-orange-500 transition">Home</Link>

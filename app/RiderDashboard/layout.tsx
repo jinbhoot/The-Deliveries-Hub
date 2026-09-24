@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import LogoutButton from "@/components/LogoutButton";
 import NotificationBell from "@/components/NotificationBell";
+import Logo from "@/components/Logo";
 
 const navigation = [
   { href: "/RiderDashboard", label: "Dashboard" },
@@ -81,16 +82,8 @@ export default function RiderDashboardLayout({ children }: { children: React.Rea
     >
       {/* Desktop / iPad Sidebar */}
       <aside className="hidden w-64 shrink-0 bg-white shadow-lg md:flex md:flex-col sticky top-0 h-screen">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-xl font-black text-orange-600">
-              <span className="size-3 rounded-full bg-orange-500 shadow-[0_0_0_3px_rgba(249,115,22,0.2)]" />
-              Deliveries Hub
-            </div>
-            <p className="mt-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-              Rider Portal
-            </p>
-          </div>
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+          <Logo href="/RiderDashboard" size="sm" showText={true} />
           <NotificationBell theme="light" />
         </div>
 

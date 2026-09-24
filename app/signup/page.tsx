@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -67,16 +69,11 @@ export default function SignupPage() {
       <div>
         <div className="bg-white rounded-3xl shadow-xl p-6 max-w-sm mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <div className="bg-orange-500 text-white p-2 rounded-md">
-                🔒
-              </div>
-              <span className="font-bold">Deliveries Hub</span>
-            </div>
+            <Logo href="/" size="xs" showText={true} />
 
-            <div className="text-sm text-gray-500 space-x-3">
-              <a href="#">About</a>
-              <a href="#">Contact</a>
+            <div className="text-xs sm:text-sm text-gray-500 space-x-2 sm:space-x-3">
+              <Link href="/" className="hover:text-orange-500 transition">Home</Link>
+              <Link href="/login" className="hover:text-orange-500 transition font-bold text-orange-600">Login</Link>
             </div>
           </div>
 

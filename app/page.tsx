@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export const metadata = {
   title: "The Deliveries Hub",
@@ -30,10 +31,7 @@ export default function HomePage() {
 
           {/* Nav */}
           <div className="flex justify-between items-center px-6 py-4">
-            <div className="flex items-center gap-2">
-              <div className="bg-orange-500 text-white p-2 rounded-md">🔒</div>
-              <h1 className="text-xl font-bold">Deliveries Hub</h1>
-            </div>
+            <Logo href="/" size="sm" showText={true} />
 
             <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-700">
               <Link href="/about" className="hover:text-orange-500 transition">About</Link>
@@ -266,7 +264,9 @@ export default function HomePage() {
           <footer className="bg-gray-900 text-gray-300 py-10">
             <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               <div>
-                <h3 className="text-white font-bold text-lg mb-3">Deliveries Hub</h3>
+                <div className="mb-3">
+                  <Logo href="/" size="sm" showText={true} textColor="white" />
+                </div>
                 <p className="text-sm text-gray-400">
                   Your ultimate partner for food, groceries, and medicine delivered right to your doorstep.
                 </p>

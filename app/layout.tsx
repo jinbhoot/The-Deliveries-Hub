@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Delivery Hub",
-  description: "Request food, medicine, and grocery deliveries.",
+  title: "Deliveries Hub",
+  description: "Request food, medicine, and grocery deliveries across Pakistan.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

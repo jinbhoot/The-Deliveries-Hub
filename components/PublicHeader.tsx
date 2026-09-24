@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import Logo from "@/components/Logo";
+
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
@@ -18,15 +20,8 @@ export default function PublicHeader() {
 
   return (
     <header className="border-b border-gray-100 bg-white">
-      <div className="flex items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="bg-orange-500 text-white p-2 rounded-md shadow-xs transition group-hover:bg-orange-600">
-            🔒
-          </div>
-          <span className="text-xl font-black text-gray-900 tracking-tight">
-            Deliveries Hub
-          </span>
-        </Link>
+      <div className="flex items-center justify-between px-6 py-3.5">
+        <Logo href="/" size="sm" showText={true} />
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-1" aria-label="Main Navigation">

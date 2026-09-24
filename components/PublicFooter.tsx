@@ -1,13 +1,13 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function PublicFooter() {
   return (
     <footer className="bg-gray-900 text-gray-300 py-12">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="bg-orange-500 text-white p-1.5 rounded-md text-sm">🔒</div>
-            <h3 className="text-white font-black text-lg tracking-tight">Deliveries Hub</h3>
+          <div className="mb-3">
+            <Logo href="/" size="sm" showText={true} textColor="white" />
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">
             Pakistan&apos;s trusted on-demand delivery platform for fresh food, daily groceries, and essential medicines.

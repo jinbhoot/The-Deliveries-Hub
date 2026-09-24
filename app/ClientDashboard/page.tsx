@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import NotificationBell from "@/components/NotificationBell";
+import Logo from "@/components/Logo";
 
 
 type SubcategoryRecord = {
@@ -724,8 +725,15 @@ export default function ClientDashboardPage() {
       <header className="sticky top-0 z-40 border-b border-white/20 bg-orange-500 text-white shadow-sm">
         <div className="mx-auto max-w-[1400px] flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 gap-2">
           {/* Brand */}
-          <Link href="/ClientDashboard" className="flex items-center gap-2 shrink-0">
-            <span className="size-2.5 sm:size-3 rounded-full bg-white shadow-[0_0_0_3px_rgba(255,255,255,0.25)]" />
+          <Link href="/ClientDashboard" className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center justify-center rounded-xl bg-white p-1 shadow-xs">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="Deliveries Hub"
+                className="h-7 sm:h-8 w-auto object-contain rounded-md"
+              />
+            </div>
             <div>
               <p className="text-base sm:text-lg font-black leading-tight">Deliveries Hub</p>
               <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-orange-100">

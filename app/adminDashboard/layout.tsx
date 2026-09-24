@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import LogoutButton from "@/components/LogoutButton";
 import NotificationBell from "@/components/NotificationBell";
+import Logo from "@/components/Logo";
 
 const navItems = [
   { href: "/adminDashboard", label: "Dashboard" },
@@ -28,10 +29,9 @@ export default function DashboardLayout({
   return (
     <div className="bg-slate-100 min-h-screen flex flex-col md:flex-row">
       {/* Mobile Top Header */}
-      <header className="sticky top-0 z-40 flex md:hidden items-center justify-between bg-white px-4 py-3 shadow-sm border-b border-slate-200">
+      <header className="sticky top-0 z-40 flex md:hidden items-center justify-between bg-white px-4 py-2.5 shadow-sm border-b border-slate-200">
         <div className="flex items-center gap-2">
-          <span className="size-2.5 rounded-full bg-orange-500" />
-          <span className="font-extrabold text-orange-600 text-lg">Deliveries Hub</span>
+          <Logo href="/adminDashboard" size="xs" showText={true} />
           <span className="rounded-md bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-orange-700">Admin</span>
         </div>
         <div className="flex items-center gap-2">
@@ -65,11 +65,8 @@ export default function DashboardLayout({
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <span className="size-3 rounded-full bg-orange-500" />
-            <span className="font-extrabold text-orange-600 text-lg">Deliveries Hub</span>
-          </div>
+        <div className="flex items-center justify-between p-4 border-b border-slate-100">
+          <Logo href="/adminDashboard" size="sm" showText={true} />
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
@@ -106,16 +103,8 @@ export default function DashboardLayout({
 
       {/* Desktop / Tablet Sidebar */}
       <aside className="w-64 shrink-0 bg-white shadow-lg hidden md:flex md:flex-col sticky top-0 h-screen">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-full bg-orange-500 shadow-[0_0_0_3px_rgba(249,115,22,0.2)]" />
-              <span className="text-xl font-black text-orange-600">Deliveries Hub</span>
-            </div>
-            <p className="mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Admin Console
-            </p>
-          </div>
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+          <Logo href="/adminDashboard" size="sm" showText={true} />
           <NotificationBell theme="light" />
         </div>
 
