@@ -24,7 +24,7 @@ export const ORDER_STATUS_FLOW: Record<OrderStatus, OrderStatus[]> = {
   Placed: ["Accepted", "Cancelled"],
   Accepted: ["Picked Up", "Cancelled"],
   "Picked Up": ["On the way", "Cancelled"],
-  "On the way": ["Delivered"],
+  "On the way": ["Delivered", "Cancelled"],
   Delivered: [],
   Cancelled: [],
 };

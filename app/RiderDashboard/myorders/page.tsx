@@ -110,6 +110,14 @@ export default function MyOrdersPage() {
   const completedOrders = orders.filter((order) => order.status === "Delivered" || order.status === "Cancelled");
   const displayedOrders = tab === "active" ? activeOrders : completedOrders;
 
+  async function handleCancelOrder(orderId: string) {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this order? (e.g. client did not pay or cannot be reached).\n\nThis will cancel the order and free up your active delivery slot so you can accept other orders."
+    );
+    if (!confirmed) return;
+    await updateStatus(orderId, "Cancelled");
+  }
+
   function renderStatusActions(order: RiderOrder & { billStatus?: string }) {
     const isBusy = updatingId === order._id;
 
@@ -131,7 +139,7 @@ export default function MyOrdersPage() {
               🔔 Remind Client
             </button>
           </div>
-        ) : order.isPaid && order.status !== "Delivered" && (
+        ) : order.isPaid && order.status !== "Delivered" && order.status !== "Cancelled" && (
           <div className="w-full rounded-xl bg-emerald-50 border border-emerald-300 p-2.5 mb-1">
             <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
               <span>✅ Payment Received (Rs. {(order.totalAmount || 0).toLocaleString()})! You can now update tracking & deliver.</span>
@@ -180,9 +188,28 @@ export default function MyOrdersPage() {
           </button>
         )}
 
+        {/* Option to Cancel order if client does not pay or rider cannot complete */}
+        {order.status !== "Delivered" && order.status !== "Cancelled" && (
+          <button
+            type="button"
+            disabled={isBusy}
+            onClick={() => handleCancelOrder(order._id)}
+            className="rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3.5 py-2 text-sm font-semibold transition cursor-pointer disabled:opacity-60"
+            title="Cancel this order (e.g. client did not pay) and free your active order slot"
+          >
+            {isBusy ? "Cancelling..." : "❌ Cancel Order"}
+          </button>
+        )}
+
         {order.status === "Delivered" && (
           <span className="rounded-lg bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 border border-green-200">
             ✓ Delivered Successfully ({order.isPaid ? "Paid Online" : "Paid"})
+          </span>
+        )}
+
+        {order.status === "Cancelled" && (
+          <span className="rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 border border-red-200">
+            ❌ Order Cancelled (Slot Free)
           </span>
         )}
       </div>

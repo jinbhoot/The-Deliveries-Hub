@@ -143,12 +143,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           orderId: id,
         });
       } else if (status === "Cancelled") {
+        const isRider = session.role === "rider";
         await createNotification({
           recipient: order.customer,
           sender: session.id,
           type: "ORDER_CANCELLED",
-          title: "❌ Order Cancelled",
-          message: `Order #${shortCode} has been cancelled.`,
+          title: isRider ? "❌ Order Cancelled by Rider" : "❌ Order Cancelled",
+          message: isRider
+            ? `Rider ${session.fullName || "Your assigned rider"} has cancelled order #${shortCode} (e.g. payment was not received or delivery could not be completed).`
+            : `Order #${shortCode} has been cancelled.`,
           link: `/ClientDashboard/myorders?id=${id}`,
           orderId: id,
         });

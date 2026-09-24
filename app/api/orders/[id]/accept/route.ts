@@ -18,6 +18,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id } = await params;
     await connectDB();
 
+    // Enforce maximum 2 active orders per rider
+    const activeOrdersCount = await Order.countDocuments({
+      rider: session.id,
+      status: { $in: ["Accepted", "Picked Up", "On the way"] },
+    });
+
+    if (activeOrdersCount >= 2) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "You cannot accept more than 2 active orders at the same time. Please complete or deliver your existing orders first.",
+        },
+        { status: 400 }
+      );
+    }
+
     const order = await Order.findOneAndUpdate(
       { _id: id, status: "Placed", rider: null },
       { $set: { rider: session.id, status: "Accepted", billStatus: "Requested" } },
