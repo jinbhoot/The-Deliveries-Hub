@@ -41,14 +41,15 @@ function StripeCheckoutForm({
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
+  const [isElementReady, setIsElementReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage("");
 
-    if (!stripe || !elements) {
-      setErrorMessage("Stripe has not finished loading. Please try again.");
+    if (!stripe || !elements || !isElementReady) {
+      setErrorMessage("Payment form is still initializing. Please wait a moment and try again.");
       return;
     }
 
@@ -109,17 +110,24 @@ function StripeCheckoutForm({
       )}
 
       {/* Official Stripe Payment Element */}
-      <div className="stripe-element-container rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="stripe-element-container relative min-h-[160px] rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+        {!isElementReady && (
+          <div className="flex items-center justify-center py-8 text-xs font-semibold text-slate-500 gap-2">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
+            Loading card input fields...
+          </div>
+        )}
         <PaymentElement
           options={{
             layout: "tabs",
           }}
+          onReady={() => setIsElementReady(true)}
         />
       </div>
 
       <button
         type="submit"
-        disabled={!stripe || processing}
+        disabled={!stripe || !isElementReady || processing}
         className="pay-button flex items-center justify-center gap-2"
       >
         {processing ? (
@@ -127,6 +135,8 @@ function StripeCheckoutForm({
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             <span>Processing with Stripe...</span>
           </>
+        ) : !isElementReady ? (
+          <span>Loading Payment Gateway...</span>
         ) : (
           <span>💳 Pay Rs. {order.totalAmount.toLocaleString()} via Stripe</span>
         )}
@@ -165,27 +175,14 @@ function PaymentContent() {
     }
   }, [redirectStatus, orderIdParam, paymentIntentParam]);
 
-  // Hide Stripe Developer Assistant floating badge from DOM
+  // Safely hide Stripe Developer Assistant floating badge from DOM without touching PaymentElement
   useEffect(() => {
     function purgeStripeBadge() {
-      const badges = document.querySelectorAll(
-        'iframe[src*="developer"], iframe[name*="developer"], iframe[src*="assistant"], div[class*="StripeDeveloperAssistant"], [data-stripe-assistant], #__privateStripeAssistant'
+      const assistantBadges = document.querySelectorAll(
+        'div[class*="StripeDeveloperAssistant"], [data-stripe-assistant], #__privateStripeAssistant'
       );
-      badges.forEach((node) => {
-        const parent = node.parentElement;
-        if (parent && parent !== document.body && parent.children.length === 1) {
-          (parent as HTMLElement).style.setProperty("display", "none", "important");
-        }
+      assistantBadges.forEach((node) => {
         (node as HTMLElement).style.setProperty("display", "none", "important");
-      });
-
-      // Target fixed bottom right elements containing stripe developer badge
-      const allFixed = document.querySelectorAll('div[style*="fixed"]');
-      allFixed.forEach((el) => {
-        const txt = el.textContent?.trim().toLowerCase() || "";
-        if (txt === "stripe >" || txt === "stripe" || txt.includes("stripe >")) {
-          (el as HTMLElement).style.setProperty("display", "none", "important");
-        }
       });
     }
 
