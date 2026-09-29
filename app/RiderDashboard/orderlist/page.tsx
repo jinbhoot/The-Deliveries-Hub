@@ -16,19 +16,24 @@ export default function OrderListPage() {
     setLoading(true);
     setError("");
     try {
-      // 1. Load available orders
-      const res = await fetch("/api/orders?scope=available");
-      const data = await res.json();
-      if (res.ok && data.success && Array.isArray(data.data)) {
+      // Fetch available orders and active orders in parallel
+      const [res, myRes] = await Promise.all([
+        fetch("/api/orders?scope=available"),
+        fetch("/api/orders", { cache: "no-store" }),
+      ]);
+
+      const [data, myData] = await Promise.all([
+        res.json().catch(() => ({ success: false })),
+        myRes.json().catch(() => ({ success: false })),
+      ]);
+
+      if (res.ok && data?.success && Array.isArray(data.data)) {
         setAvailableOrders(data.data);
-      } else {
-        setError(data.message || "Failed to load available orders.");
+      } else if (data?.message) {
+        setError(data.message);
       }
 
-      // 2. Load rider's current active orders to check the 2-order limit
-      const myRes = await fetch("/api/orders", { cache: "no-store" });
-      const myData = await myRes.json();
-      if (myRes.ok && myData.success && Array.isArray(myData.data)) {
+      if (myRes.ok && myData?.success && Array.isArray(myData.data)) {
         const inProgress = myData.data.filter(
           (o: RiderOrder) =>
             o.status === "Accepted" || o.status === "Picked Up" || o.status === "On the way"
