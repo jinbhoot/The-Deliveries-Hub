@@ -32,7 +32,9 @@ export async function GET(request: NextRequest) {
   const orders = await Order.find(filter)
     .populate("customer", "fullName email phone")
     .populate("rider", "fullName email phone")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .lean();
 
   return NextResponse.json({ success: true, data: orders });
 }

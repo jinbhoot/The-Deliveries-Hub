@@ -22,28 +22,44 @@ export default function RiderDashboardLayout({ children }: { children: React.Rea
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
+    // Check cached rider info for instant render
+    try {
+      const cached = sessionStorage.getItem("rider_info_cache");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.riderName) setRiderName(parsed.riderName);
+        if (parsed.riderId) setRiderId(parsed.riderId);
+        if (parsed.isOnline !== undefined) setIsOnline(parsed.isOnline);
+      }
+    } catch {}
+
     async function loadRiderInfo() {
       try {
         const res = await fetch("/api/riders/me");
-        const text = await res.text().catch(() => "");
-        const data = text ? JSON.parse(text) : null;
+        const data = await res.json().catch(() => null);
         if (res.ok && data?.success && data?.data) {
           const r = data.data;
-          setRiderName(r.user?.fullName || "Rider");
-          setRiderId(r._id ? `#${r._id.slice(-6).toUpperCase()}` : "#123456");
-          // If rider logs into dashboard, automatically ensure they are online
+          const name = r.user?.fullName || "Rider";
+          const id = r._id ? `#${r._id.slice(-6).toUpperCase()}` : "#123456";
           const onlineState = r.online !== undefined ? Boolean(r.online) : true;
+          
+          setRiderName(name);
+          setRiderId(id);
           setIsOnline(onlineState);
 
-          // If currently offline in db on first dashboard load, mark online
+          try {
+            sessionStorage.setItem(
+              "rider_info_cache",
+              JSON.stringify({ riderName: name, riderId: id, isOnline: onlineState })
+            );
+          } catch {}
+
           if (!r.online) {
             fetch("/api/riders/me", {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ online: true }),
-            })
-              .then(() => setIsOnline(true))
-              .catch(() => {});
+            }).catch(() => {});
           }
         }
       } catch (err) {
@@ -64,6 +80,12 @@ export default function RiderDashboardLayout({ children }: { children: React.Rea
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ online: nextStatus }),
       });
+      try {
+        sessionStorage.setItem(
+          "rider_info_cache",
+          JSON.stringify({ riderName, riderId, isOnline: nextStatus })
+        );
+      } catch {}
     } catch (err) {
       console.error("Failed to toggle online status:", err);
       setIsOnline(!nextStatus);
@@ -73,13 +95,7 @@ export default function RiderDashboardLayout({ children }: { children: React.Rea
   }
 
   return (
-    <div
-      className="flex min-h-screen bg-gray-100 bg-cover bg-center bg-no-repeat bg-fixed"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(234, 88, 12, 0.92), rgba(234, 88, 12, 0.92)), url('/rider%20pic.png')",
-      }}
-    >
+    <div className="flex min-h-screen bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600">
       {/* Desktop / iPad Sidebar */}
       <aside className="hidden w-64 shrink-0 bg-white shadow-lg md:flex md:flex-col sticky top-0 h-screen">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">

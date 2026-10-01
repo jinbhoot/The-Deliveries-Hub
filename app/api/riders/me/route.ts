@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
 
   await connectDB();
 
-  const rider = await Rider.findOne({ user: session.id }).populate("user", "fullName email phone");
+  const rider = await Rider.findOne({ user: session.id })
+    .populate("user", "fullName email phone")
+    .lean();
   if (!rider) {
     return NextResponse.json({ success: false, message: "Rider profile not found." }, { status: 404 });
   }
